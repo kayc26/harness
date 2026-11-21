@@ -10,7 +10,7 @@ import { computed, ref } from 'vue'
 import type { User } from '../lib/neon/auth'
 import { viewsFor, type DataClient, type Membership } from '../lib/neon/data'
 import NewMessageWindow from './NewMessageWindow.vue'
-import { PORTAL_MENU } from '../lib/chat/admin'
+import { ADMIN_CARD, PORTAL_MENU } from '../lib/chat/admin'
 import { currentTheme, toggleTheme } from './theme'
 
 const props = defineProps<{ user: User; membership: Membership; data: Required<DataClient> }>()
@@ -101,15 +101,10 @@ function switchTheme(): void {
                from the real portal; only the last item is in the demo. -->
           <section v-if="views.includes('patient')" class="tasks" aria-labelledby="tasks-head">
             <h2 id="tasks-head">{{ PORTAL_MENU }}</h2>
-            <button type="button" class="task" @click="staticPart('Schedule an appointment')">
-              <span class="ico" aria-hidden="true">📅</span>Schedule an appointment
-            </button>
-            <button type="button" class="task" @click="staticPart('Refill a medication')">
-              <span class="ico" aria-hidden="true">💊</span>Refill a medication
-            </button>
-            <button type="button" class="task" @click="staticPart('Billing Assistance')">
-              <span class="ico" aria-hidden="true">🧾</span>Billing Assistance
-            </button>
+            <!-- the same placeholder pages the assistant's cards link to (index.html) -->
+            <a class="task" :href="ADMIN_CARD.appointment.href"><span class="ico" aria-hidden="true">📅</span>Schedule an appointment</a>
+            <a class="task" :href="ADMIN_CARD.refill.href"><span class="ico" aria-hidden="true">💊</span>Refill a medication</a>
+            <a class="task" :href="ADMIN_CARD.billing.href"><span class="ico" aria-hidden="true">🧾</span>Billing Assistance</a>
             <button class="send" type="button" @click="openWindow">
               ✦ Contact Your Care Team<small>Ask the diabetes assistant a non-urgent question</small>
             </button>
@@ -317,6 +312,8 @@ button {
   background: var(--panel);
   color: var(--text);
   text-align: left;
+  text-decoration: none;
+  box-sizing: border-box;
 }
 .send {
   display: block;

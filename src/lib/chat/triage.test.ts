@@ -58,6 +58,9 @@ describe('must catch: urgent (the clinic red flags)', () => {
     ['I keep going low', NONE],
     ['my pump alarm keeps going off, it says occlusion', { ...NONE, uses_pump: true }],
     ['the site came out of my pump', NONE],
+    ['I ran out of insulin', NONE], // out of insulin now (ADR-0023, QST-ADMIN-OUT-OF-INSULIN: B)
+    ["I'm out of my Lantus", NONE],
+    ['I have no insulin left', NONE],
     ["I'm pregnant and my sugar is 210", NONE],
     ['my sugar is 210', { ...NONE, pregnant: true }], // pregnant profile + glucose concern
   ] as const)('%s', (msg, profile) => atLeast(msg, 'urgent', profile))
@@ -75,6 +78,14 @@ describe('must catch: check-in at least (help shown inline)', () => {
   it('flags emotional distress', () => {
     expect(tierOf("I'm overwhelmed and can't cope with all this")).toBe('distress')
   })
+})
+
+describe('running low on insulin is not yet running out (ADR-0023)', () => {
+  // Kay chose B: urgent only when the patient is out now. These still have insulin,
+  // so they get the refill card without an alert; the last is a general question.
+  it.each(["I'm almost out of insulin", "I'm running out of insulin", 'What should I do if I run out of insulin?'])('%s', (msg) =>
+    expect(tierOf(msg)).toBe('none'),
+  )
 })
 
 describe('must not alarm: ordinary education questions', () => {

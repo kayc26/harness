@@ -18,7 +18,7 @@ import { buildCardIndex, type TopicCard } from '../lib/chat/cards'
 import { openRouterModels, type CostMeter } from '../lib/chat/models'
 import { ConversationLog, cardsToText } from '../lib/chat/persist'
 import { NO_INFO_REPLY, SOCIAL_REPLY } from '../lib/chat/social'
-import { ADMIN_CARD, adminRules, PORTAL_MENU } from '../lib/chat/admin'
+import { ADMIN_CARD, adminRules } from '../lib/chat/admin'
 import { detectLanguage, LANGUAGE_NOTE } from '../lib/chat/language'
 import { planOnRequest, raiseEscalation, runTurn, type Card, type TurnOutcome } from '../lib/chat/turn'
 import type { Regimen } from '../lib/patients/readback'
@@ -295,7 +295,7 @@ const docTitles = (sources: KbPassage[], label: KbPassage['source_label']) =>
               <div v-else-if="c.kind === 'admin'">
                 <p>{{ ADMIN_CARD[c.lane].says }}</p>
                 <p v-if="ADMIN_CARD[c.lane].menuItem">
-                  {{ ADMIN_CARD[c.lane].use ?? 'Please use' }} <strong>{{ ADMIN_CARD[c.lane].menuItem }}</strong> in the portal's “{{ PORTAL_MENU }}” menu.
+                  {{ ADMIN_CARD[c.lane].use ?? 'Please use' }} <a :href="ADMIN_CARD[c.lane].href">{{ ADMIN_CARD[c.lane].menuItem }}</a>.
                 </p>
               </div>
               <!-- ADR-0016: a fixed, approved reply to small talk. -->

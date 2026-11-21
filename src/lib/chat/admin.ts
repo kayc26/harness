@@ -26,23 +26,27 @@ export const ADMIN_LANES: AdminLane[] = ['appointment', 'refill', 'billing', 'pu
  *  MyPennMedicine menu (screenshot, 2026-11-21) because a patient scanning for a button
  *  matches on the words. Pump wording: Kay, 2026-11-21. The three menu cards are
  *  Claude's draft for Kay's review. */
-export const ADMIN_CARD: Record<AdminLane, { says: string; menuItem: string | null; use?: string }> = {
-  appointment: { says: "I can't book or change appointments from this chat.", menuItem: 'Schedule an appointment' },
+// The menu item is a link to its placeholder page (Kay, QST-ADMIN-CARD-TEXT: "just make it a
+// pseudolink"): a static "this is a demo" panel in index.html, opened by CSS :target like
+// the nurse-line link. A real deployment would put the portal's own URL here.
+export const ADMIN_CARD: Record<AdminLane, { says: string; menuItem: string | null; href?: string; use?: string }> = {
+  appointment: { says: "I can't book or change appointments from this chat.", menuItem: 'Schedule an appointment', href: '#demo-schedule' },
   // The portal's Medications page (screenshot, 2026-11-21): a request there asks the
   // provider to RENEW a prescription; refills already left come from the pharmacy.
   refill: {
     says: "I can't send refill requests from this chat. If your prescription still has refills left, contact your pharmacy.",
     use: 'To ask your provider to renew it, use',
     menuItem: 'Refill a medication',
+    href: '#demo-refill',
   },
-  billing: { says: "I can't help with bills or insurance claims from this chat.", menuItem: 'Billing Assistance' },
+  billing: { says: "I can't help with bills or insurance claims from this chat.", menuItem: 'Billing Assistance', href: '#demo-billing' },
   pump: { says: "If your insulin pump isn't working, please contact your pump manufacturer.", menuItem: null },
 }
 
-/** The sentence pointing to the menu item, for the chat and the eval reports. */
+/** The sentence pointing to the menu item, for the eval reports (the chat shows a link). */
 export function menuSentence(lane: AdminLane): string | null {
   const c = ADMIN_CARD[lane]
-  return c.menuItem ? `${c.use ?? 'Please use'} ${c.menuItem} in the portal's “${PORTAL_MENU}” menu.` : null
+  return c.menuItem ? `${c.use ?? 'Please use'} ${c.menuItem}.` : null
 }
 
 /** The portal menu's own heading, which the cards point to. */

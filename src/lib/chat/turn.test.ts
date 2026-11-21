@@ -392,6 +392,14 @@ describe('portal tasks go back to the portal menu (ADR-0023)', () => {
     expect(o.triage.criteria).toContain('pump_failure_pump_user') // the fixed rule, not only the classifier
   })
 
+  it('out of insulin now: the nurse line first, then the refill card (QST-ADMIN-OUT-OF-INSULIN: B)', async () => {
+    const { m, calls } = models({ classify: cls('none', true) })
+    const o = await turn('I ran out of insulin', m)
+    expect(o.cards.map((c) => (c.kind === 'escalation' ? `escalation:${c.tier}` : c.kind))).toEqual(['escalation:urgent', 'admin'])
+    expect(o.cards[1]).toEqual({ kind: 'admin', lane: 'refill' })
+    expect(calls.complete).toBe(0)
+  })
+
   it('an emergency still short-circuits before any card or model call', async () => {
     const { m, calls } = models({})
     const o = await turn("my pump died and my husband won't wake up", m, { profile: PUMP_USER })

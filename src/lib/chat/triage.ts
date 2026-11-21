@@ -8,7 +8,8 @@
 //              DKA signs, chest pain, self-harm. Shows 911 first.
 //   urgent     the clinic's RED FLAGS: glucose > 350; high with ketones or a DKA
 //              history; severe low (< 54 or needing help) or > 2 lows in 48 h; pump
-//              failure; pregnancy (with a glucose concern). Shows the nurse line, same day.
+//              failure; out of insulin now (ADR-0023); pregnancy (with a glucose concern).
+//              Shows the nurse line, same day.
 //   distress   emotional distress. Shows the nurse line, and 911 if in danger.
 //   checkin    250–350, or a single low of 54–69, or low/high symptoms without a
 //              number. Help buttons appear inline with the approved card.
@@ -90,6 +91,13 @@ const DOSE_INTENT = new RegExp(
   ].join('|'),
 )
 
+// Out of insulin NOW (ADR-0023, QST-ADMIN-OUT-OF-INSULIN: B, Kay 2026-11-21): no insulin
+// going in, like a dead pump. "Almost out" and "running out" are not here: there is
+// still time, and the refill card (admin.ts) answers those.
+const OUT_OF_INSULIN = new RegExp(
+  `\\b(?:ran|have run|'?ve run|i'?m|i am|completely|totally|all) out of (?:my )?${INSULIN}\\b|\\bno (?:more )?${INSULIN} left\\b|\\b(?:have|got) no (?:more )?${INSULIN}\\b`,
+)
+
 export function triageRules(message: string, profile: Profile): TriageResult {
   const t = message.toLowerCase().replace(/[’`]/g, "'")
   const criteria: string[] = []
@@ -117,6 +125,7 @@ export function triageRules(message: string, profile: Profile): TriageResult {
   if (has(NEEDED_HELP, t) && (low || has(LOW_SYMPTOMS, t) || /\blow\b/.test(t))) raise('urgent', 'severe_low_needed_help')
   if (has(REPEATED_LOWS, t)) raise('urgent', 'repeated_lows')
   if (has(PUMP_FAILURE, t)) raise('urgent', profile.uses_pump ? 'pump_failure_pump_user' : 'pump_failure')
+  if (has(OUT_OF_INSULIN, t)) raise('urgent', 'out_of_insulin')
   if (has(PREGNANT, t) && glucoseConcern) raise('urgent', 'pregnancy_glucose_concern')
   if (profile.pregnant && glucoseConcern) raise('urgent', 'pregnant_profile_glucose_concern')
 
