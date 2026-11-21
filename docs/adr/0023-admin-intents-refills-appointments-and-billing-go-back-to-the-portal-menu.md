@@ -9,8 +9,8 @@ adr teaching map: the example is not the teaching — these are the up-links fro
 # ADR-0023: Admin intents — refills, appointments and billing go back to the portal menu
 
 - **Date**: 2026-11-21
-- **Iteration**: 1
-- **Status**: Draft
+- **Iteration**: 2
+- **Status**: Accepted
 - **Deciders**: Kay, Claude Opus 5 (Cowork session)
 
 **TL;DR**: DIAlogue owns one lane of the patient portal, "Contact Your Care Team"; a message that belongs to another lane (refill, appointment, billing) should get a fixed card naming that lane, written by code, instead of whatever retrieval happens to return.
@@ -210,8 +210,8 @@ yes
 
 ## Action Items
 
-- [ ] Decide QST-ADMIN-SET, ORDER, GATE and MOCK - Owner: Kay
-- [ ] Add the out-of-portal destinations to the clinical sponsor email already in KANBAN Waiting: pump manufacturer referral, diabetes class routing, supplies - Owner: Kay
+- [x] Decide QST-ADMIN-SET, ORDER, GATE and MOCK - Owner: Kay
+- [ ] Add the out-of-portal destinations to the clinical sponsor email already in KANBAN Waiting: diabetes class routing, supplies (the pump is generic since iteration 2, so it no longer waits) - Owner: Kay
 - [ ] Add admin cases to `kb/clinician-cases.txt`: both refill phrasings on a type 1 and a type 2 patient, plus appointment, billing, classes and supplies - Owner: whoever builds it
 - [ ] Fix the `hasPlanOnFile` guard in step 3-plan, with a regression test - Owner: whoever builds it
 
@@ -234,6 +234,17 @@ yes
 - Contributors: Kay, Claude Opus 5 (Cowork session)
 - Changes: initial draft; four open questions; decision recorded as Option B, staged.
 - Outcome: Draft
+
+### Iteration 2 (2026-11-21)
+- Trigger: Kay, asked whether to wait for Taylor Lee's reply before building: *"Then for the pump just say please contact pump manufactorer without specific numbers or anything"*.
+- Contributors: Kay, Nibble (Claude Opus 5.5)
+- Changes:
+  - **Build now, not after Taylor replies.** The three menu lanes need nobody's approval (QST-ADMIN-SET, B, stage one).
+  - **The pump joins stage one** with a generic card: "please contact your pump manufacturer", no company names, phone numbers or steps. It names no clinic fact, so it does not wait on the sponsor either.
+  - **Classes and supplies still wait** on Taylor or the clinical sponsor; they keep today's behaviour until then.
+  - The "then us" half of Taylor's pump advice (call the care team for injection cover) is already carried by triage: `PUMP_FAILURE` in `triage.ts` raises the turn to urgent, which shows the nurse line above the reply. The pump card sits under that alert, it does not replace it.
+  - Status Draft → Accepted: SET, ORDER and GATE are answered, per the Validation note.
+- Outcome: Accepted; stage one being built.
 
 ---
 
