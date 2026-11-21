@@ -1,4 +1,4 @@
-# SEED: User Feedback
+# SEED: Clickable answers
 
 - **Date**: 2026-11-20
 - **From**: Kay
