@@ -145,6 +145,81 @@ a
 
 ---
 
+### QST-ADMIN-OUT-OF-INSULIN: Is "I ran out of insulin" only a refill, or also a red flag?
+- Status: unanswered
+- Why asking: Since iteration 2, "I ran out of insulin" and "I'm almost out of insulin" get the refill card and nothing else. Triage (`triage.ts`) has no rule for running out, so no alert shows unless the classifier happens to raise one. For a type 1 patient, having no insulin is close to the broken-pump case, which ADR-0006 treats as urgent. Whether it is a red flag is a clinical call, not a wording one.
+- Need: pick a letter (or override — any shape answers)
+
+Options:
+- **A — Refill only**: keep today's behaviour. The card names the pharmacy and Refill a medication; the alert shows only if the message also has a reading or symptom, or the classifier raises it.
+- **B — Urgent when out now**: add a fixed triage rule for "ran out / out of / no insulin left" (not "almost out"), so the nurse line shows above the refill card, the way the pump card works.
+- **C — Urgent only for type 1 or pump users**: as B, but only when the patient's profile says type 1 or a pump. A type 2 patient on basal insulin alone has more time.
+- **D — Ask the sponsor first**: keep A for now and add the question to the clinical sponsor email that is already waiting.
+
+**Recommendation**: (by Nibble, Claude Opus 5.5, 2026-11-21)
+**B — urgent when out now, and D alongside.** *Rationale*: the pump case already sets the pattern: no insulin going in means the nurse line shows, then the card says where to get more. A false alarm here costs one extra alert box; a miss leaves a type 1 patient with only a refill card. "Almost out" stays refill-only, because there is still time. *Confidence*: 0.6 — because the asymmetry is clear, but the threshold is clinical and nobody clinical has said it. *If wrong*: if the sponsor says running out is handled by the pharmacy the same day and is not a nurse-line matter, this flips to A.
+
+**ANS:** (by Kay)
+[Fill this in]
+
+---
+
+### QST-ADMIN-CARD-TEXT: Are the three menu cards worded right?
+- Status: unanswered
+- Why asking: You wrote the pump card. Claude drafted the other three (`ADMIN_CARD` in `src/lib/chat/admin.ts`), and patients will read them word for word. Today they read:
+  - Appointment: "I can't book or change appointments from this chat. Please use **Schedule an appointment** in the portal's "What would you like to do?" menu."
+  - Refill: "I can't send refill requests from this chat. If your prescription still has refills left, contact your pharmacy. To ask your provider to renew it, use **Refill a medication** in the portal's "What would you like to do?" menu."
+  - Billing: "I can't help with bills or insurance claims from this chat. Please use **Billing Assistance** in the portal's "What would you like to do?" menu."
+- Need: pick a letter (or override — any shape answers)
+
+Options:
+- **A — Keep as written**: ship the three cards as above.
+- **B — Shorter, no "I can't"**: drop the first sentence and keep only where to go ("For a refill, use **Refill a medication**…"). Fewer words, but it no longer says why the chat isn't doing it.
+- **C — Your wording**: rewrite any of them in the ANS slot.
+
+**Recommendation**: (by Nibble, Claude Opus 5.5, 2026-11-21)
+**A — keep as written.** *Rationale*: each card says why it isn't answering, then where to go, which is the "validate, then point" shape you agreed is the same mechanism (QST-ADMIN-VALIDATE). The refill card's pharmacy sentence is the portal's own distinction from the Medications page. *Confidence*: 0.6 — because the wording has had no patient or clinician look at it yet. *If wrong*: if testers skim past the first sentence, as your "the current ui is a bit too wordy" (ADR-0004, iteration 4) suggests some will, this flips to B.
+
+**ANS:** (by Kay)
+[Fill this in]
+
+---
+
+### QST-ADMIN-MENU-LABEL: What should the fourth menu button say?
+- Status: unanswered
+- Why asking: The home page menu's fourth button opens the assistant. The portal's own label is "Contact Your Care Team", and the real messaging disclaimer behind it promises "Your message will be reviewed by your care team" within 2 business days. The assistant does not do that until ADR-0008's handoff exists. Taylor's 11/18 worry was a patient believing they had messaged their provider. Today the button reads "✦ Contact Your Care Team", with "Ask the diabetes assistant a non-urgent question" under it.
+- Need: pick a letter (or override — any shape answers)
+
+Options:
+- **A — Portal label plus sub-line**: as built. It matches the menu the cards point to, and the sub-line says it is an assistant.
+- **B — The old label**: "✦ Ask a non-urgent question", as before this ADR. It never claims a person reads it, but the menu no longer matches the real one.
+- **C — Portal label only**: "Contact Your Care Team" with the portal's own description. The most faithful copy, and the one that invites Taylor's misreading most.
+
+**Recommendation**: (by Nibble, Claude Opus 5.5, 2026-11-21)
+**A — portal label plus sub-line.** *Rationale*: the deflection cards name the portal's menu, so the menu has to look like it, and the sub-line is the cheapest honest correction. *Confidence*: 0.65 — because it is a judgement about what older users read, and nobody has watched one use it. *If wrong*: if a tester or Taylor says they thought a nurse would read their message, this flips to B.
+
+**ANS:** (by Kay)
+[Fill this in]
+
+---
+
+### QST-ADMIN-LIVE-EVAL: Run the clinician cases against live models now?
+- Status: unanswered
+- Why asking: The offline tests check the rules and the turn order with scripted models. Nothing has checked the classifier's new `admin` field, or the six new admin cases, against the real models. `npm run kb:eval-clinician -- --yes` runs all 17 cases for about $0.05 from the $15 budget.
+- Need: yes/no
+
+Options:
+- **A — Run it now**: before pushing, so the report shows what the live site will do.
+- **B — Push first, run later**: the rules carry every admin case in the file, so the classifier only matters for phrasings the rules miss.
+
+**Recommendation**: (by Nibble, Claude Opus 5.5, 2026-11-21)
+**A — run it now.** *Rationale*: the new classifier line could change what the classifier says about tier or topics on non-admin messages too, and this is the cheapest way to see that before testers do. *Confidence*: 0.7 — because the prompt change is small, but it touches every turn. *If wrong*: if the budget is being saved for the moderated sessions, this flips to B.
+
+**ANS:** (by Kay)
+[Fill this in]
+
+---
+
 ## Supporting Materials
 
 ### FIL: where this lives in the code
@@ -248,9 +323,7 @@ yes
   - The "then us" half of Taylor's pump advice (call the care team for injection cover) is already carried by triage: `PUMP_FAILURE` in `triage.ts` raises the turn to urgent, which shows the nurse line above the reply. The pump card sits under that alert, it does not replace it.
   - Status Draft → Accepted: SET, ORDER and GATE are answered, per the Validation note.
 - Built (same day): `src/lib/chat/admin.ts` (lanes, card text, rules), the classifier's `admin` field (`combine.ts`, `prompts.ts`), step 2c in `turn.ts`, the card in `ChatPanel.vue` (also on the rules-only path), the four-item menu in `HomeScreen.vue`, `admin` in the turn log (`persist.ts`). `PUMP_FAILURE` in `triage.ts` learned "won't turn on", "dead", "died", "cracked": Taylor's own message returned tier none from the fixed rules, so the nurse line hung on the classifier (regression test in `triage.test.ts`).
-- Doubts raised while building, not yet decided:
-  - "I ran out of insulin" gets the refill card and nothing else. Triage has no rule for running out, and for a type 1 patient that is close to the pump case (no insulin going in). Whether it is a red flag is a clinical call.
-  - The fourth menu item now reads "Contact Your Care Team" with "Ask the diabetes assistant a non-urgent question" under it. Taylor's 11/18 worry was a patient believing they had messaged their provider; the portal's own label invites that belief, hence the sub-line.
+- Doubts raised while building: running out of insulin, the card wording, the menu label, and a live run. Each is now a question in the Questions section (QST-ADMIN-OUT-OF-INSULIN, QST-ADMIN-CARD-TEXT, QST-ADMIN-MENU-LABEL, QST-ADMIN-LIVE-EVAL). Also noted:
   - Consequences says deflections cost no model call. They skip the answer model and the monitor, but the classifier still runs, because triage needs it first.
   - The three menu cards' wording is Claude's draft; only the pump wording is Kay's.
 - Outcome: Accepted; stage one built, gate green (391 tests).
