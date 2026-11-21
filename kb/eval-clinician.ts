@@ -23,7 +23,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { openRouterModels, type CostMeter } from '../src/lib/chat/models'
 import { buildIndex, type DiabetesType, type KbPassage } from '../src/lib/chat/retrieve'
 import { NO_INFO_REPLY, SOCIAL_REPLY } from '../src/lib/chat/social'
-import { ADMIN_CARD } from '../src/lib/chat/admin'
+import { ADMIN_CARD, menuSentence } from '../src/lib/chat/admin'
 import type { Profile } from '../src/lib/chat/triage'
 import { runTurn, type Card } from '../src/lib/chat/turn'
 import type { Regimen } from '../src/lib/patients/readback'
@@ -69,7 +69,7 @@ const shown = (c: Card): string => {
     case 'social': return `**[small talk: fixed ${c.intent} reply]** ${SOCIAL_REPLY[c.intent]}`
     case 'clarify': return `**[clarifying question]** ${c.text}`
     case 'language': return `**[not English (${c.lang}): help shown]**`
-    case 'admin': return `**[portal task: fixed ${c.lane} card]** ${ADMIN_CARD[c.lane].says}${ADMIN_CARD[c.lane].menuItem ? ` Please use ${ADMIN_CARD[c.lane].menuItem} in the portal menu.` : ''}`
+    case 'admin': return `**[portal task: fixed ${c.lane} card]** ${ADMIN_CARD[c.lane].says} ${menuSentence(c.lane) ?? ''}`
     case 'answer': return `**[AI-written answer; sources: ${c.sources.map((s) => `\`${s.id}\` (${s.source_label})`).join(', ') || 'none'}]** ${c.text}`
     case 'topic_card': return `**[approved card \`${c.card.id}\`, word for word]** ${c.card.body}`
   }

@@ -26,11 +26,23 @@ export const ADMIN_LANES: AdminLane[] = ['appointment', 'refill', 'billing', 'pu
  *  MyPennMedicine menu (screenshot, 2026-11-21) because a patient scanning for a button
  *  matches on the words. Pump wording: Kay, 2026-11-21. The three menu cards are
  *  Claude's draft for Kay's review. */
-export const ADMIN_CARD: Record<AdminLane, { says: string; menuItem: string | null }> = {
+export const ADMIN_CARD: Record<AdminLane, { says: string; menuItem: string | null; use?: string }> = {
   appointment: { says: "I can't book or change appointments from this chat.", menuItem: 'Schedule an appointment' },
-  refill: { says: "I can't send refill requests from this chat.", menuItem: 'Refill a medication' },
+  // The portal's Medications page (screenshot, 2026-11-21): a request there asks the
+  // provider to RENEW a prescription; refills already left come from the pharmacy.
+  refill: {
+    says: "I can't send refill requests from this chat. If your prescription still has refills left, contact your pharmacy.",
+    use: 'To ask your provider to renew it, use',
+    menuItem: 'Refill a medication',
+  },
   billing: { says: "I can't help with bills or insurance claims from this chat.", menuItem: 'Billing Assistance' },
   pump: { says: "If your insulin pump isn't working, please contact your pump manufacturer.", menuItem: null },
+}
+
+/** The sentence pointing to the menu item, for the chat and the eval reports. */
+export function menuSentence(lane: AdminLane): string | null {
+  const c = ADMIN_CARD[lane]
+  return c.menuItem ? `${c.use ?? 'Please use'} ${c.menuItem} in the portal's “${PORTAL_MENU}” menu.` : null
 }
 
 /** The portal menu's own heading, which the cards point to. */
@@ -50,7 +62,8 @@ const PATTERNS: Record<AdminLane, RegExp[]> = {
     // "visit" and "check-up" only with a booking verb: "I visit the bathroom a lot" is a symptom.
     /\b(?:book|schedul\w*|cancel\w*|reschedul\w*)\b[^.?!]{0,20}\b(?:visits?|check-?ups?|follow-?ups?)\b/,
     /\breschedul\w*/,
-    /\bwhen is my (?:next )?(?:app?oint?ment|appt|visit)\b/,
+    // Not "when is my next appointment?": the portal files questions ABOUT an appointment
+    // under Contact Your Care Team ("Appointment Question"), our lane (screenshot, 11/21).
   ],
   refill: [
     // "refill" and its typos, but not refilling a pump's reservoir or cartridge

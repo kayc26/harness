@@ -295,7 +295,7 @@ const docTitles = (sources: KbPassage[], label: KbPassage['source_label']) =>
               <div v-else-if="c.kind === 'admin'">
                 <p>{{ ADMIN_CARD[c.lane].says }}</p>
                 <p v-if="ADMIN_CARD[c.lane].menuItem">
-                  Please use <strong>{{ ADMIN_CARD[c.lane].menuItem }}</strong> in the portal's “{{ PORTAL_MENU }}” menu.
+                  {{ ADMIN_CARD[c.lane].use ?? 'Please use' }} <strong>{{ ADMIN_CARD[c.lane].menuItem }}</strong> in the portal's “{{ PORTAL_MENU }}” menu.
                 </p>
               </div>
               <!-- ADR-0016: a fixed, approved reply to small talk. -->

@@ -21,7 +21,6 @@ describe('must point to the portal menu', () => {
     ['can I make an apointment with my endocrinologist', 'appointment'],
     ['I need to reschedule my visit', 'appointment'],
     ['how do I cancel my appt on friday', 'appointment'],
-    ['when is my next appointment?', 'appointment'],
     ['I got a bill I do not understand', 'billing'],
     ['why was I billed twice', 'billing'],
     ['how much is my copay', 'billing'],
@@ -37,6 +36,7 @@ describe('must not deflect: health questions that only mention the subject', () 
   it.each([
     "How do I prepare for my doctor's appointment?", // kb/routing-questions.txt
     'What should I eat before my appointment?',
+    'When is my next appointment?', // the portal's "Appointment Question" sits under Contact Your Care Team
     'How do insulin pumps work?', // kb/routing-questions.txt
     "I'm getting a new pump, how do I count carbs with it?",
     'How do I refill my pump reservoir?', // the patient does this; it is not a prescription
