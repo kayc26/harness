@@ -106,7 +106,7 @@ function switchTheme(): void {
             <a class="task" :href="ADMIN_CARD.refill.href"><span class="ico" aria-hidden="true">💊</span>Refill a medication</a>
             <a class="task" :href="ADMIN_CARD.billing.href"><span class="ico" aria-hidden="true">🧾</span>Billing Assistance</a>
             <button class="send" type="button" @click="openWindow">
-              ✦ Contact Your Care Team<small>Ask the diabetes assistant a non-urgent question</small>
+              ✦ Contact Your Care Team<small>Powered by DIAlogue, your AI assistant</small>
             </button>
           </section>
           <ul>
