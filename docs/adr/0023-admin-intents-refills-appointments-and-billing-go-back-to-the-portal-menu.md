@@ -202,7 +202,7 @@ yes
 
 ---
 
-- [ ] Latent bug, found while tracing this: step 3-plan guards only on `!input.regimen`, not on `hasPlanOnFile`. George has a regimen object with a pump and zero insulins, so a `plan_question` classification would show him a read-back whose first line is `NO_INSULIN_LINE` — a plan stating that nothing is on file. `hasPlanOnFile` already exists in `src/lib/patients/readback.ts` and guards the ADR-0022 offer path. One-line fix, regression test writes itself (Third Directive).
+- [x] ~~Latent bug: step 3-plan guards only on `!input.regimen`, not on `hasPlanOnFile`, so George would be shown `NO_INSULIN_LINE`.~~ **Not a bug** (Nibble, iteration 2): `regimenLines` reads George's pump settings back ("Insulin pump background rate: about 0.7 units per hour."), so `hasPlanOnFile` is already true for him, and `fixtures.test.ts` requires every demo regimen to have insulin or a pump. The guard difference matters only for an empty stored regimen, where "No insulin is on file" is a true read-back. No fix, no regression test (Fourth Directive: it would test a case that cannot occur).
 - [ ] Concern: the destination table is clinic-specific and cuts against the market section's claim that the same product serves 401,000 sites. Keep it as data, not code.
 - [ ] Unverified assumption: that approximately this four-item menu is standard across Epic MyChart deployments. Asserted from one screenshot of one deployment.
 
@@ -212,8 +212,10 @@ yes
 
 - [x] Decide QST-ADMIN-SET, ORDER, GATE and MOCK - Owner: Kay
 - [ ] Add the out-of-portal destinations to the clinical sponsor email already in KANBAN Waiting: diabetes class routing, supplies (the pump is generic since iteration 2, so it no longer waits) - Owner: Kay
-- [ ] Add admin cases to `kb/clinician-cases.txt`: both refill phrasings on a type 1 and a type 2 patient, plus appointment, billing, classes and supplies - Owner: whoever builds it
-- [ ] Fix the `hasPlanOnFile` guard in step 3-plan, with a regression test - Owner: whoever builds it
+- [x] Add admin cases to `kb/clinician-cases.txt`: both refill phrasings on a type 1 and a type 2 patient, plus appointment and billing (classes and supplies wait for stage two) - Owner: Nibble
+- [x] ~~Fix the `hasPlanOnFile` guard in step 3-plan~~: not a bug, see Open Follow-ups
+- [ ] Run `npm run kb:eval-clinician -- --yes` (about $0.05, live models) to check the classifier widener and the new cases end to end - Owner: Kay's go-ahead (budget)
+- [ ] Tell Taylor Lee the refill answer she approved on 11/18 is now the refill card - Owner: Kay
 
 ---
 
@@ -244,7 +246,13 @@ yes
   - **Classes and supplies still wait** on Taylor or the clinical sponsor; they keep today's behaviour until then.
   - The "then us" half of Taylor's pump advice (call the care team for injection cover) is already carried by triage: `PUMP_FAILURE` in `triage.ts` raises the turn to urgent, which shows the nurse line above the reply. The pump card sits under that alert, it does not replace it.
   - Status Draft → Accepted: SET, ORDER and GATE are answered, per the Validation note.
-- Outcome: Accepted; stage one being built.
+- Built (same day): `src/lib/chat/admin.ts` (lanes, card text, rules), the classifier's `admin` field (`combine.ts`, `prompts.ts`), step 2c in `turn.ts`, the card in `ChatPanel.vue` (also on the rules-only path), the four-item menu in `HomeScreen.vue`, `admin` in the turn log (`persist.ts`). `PUMP_FAILURE` in `triage.ts` learned "won't turn on", "dead", "died", "cracked": Taylor's own message returned tier none from the fixed rules, so the nurse line hung on the classifier (regression test in `triage.test.ts`).
+- Doubts raised while building, not yet decided:
+  - "I ran out of insulin" gets the refill card and nothing else. Triage has no rule for running out, and for a type 1 patient that is close to the pump case (no insulin going in). Whether it is a red flag is a clinical call.
+  - The fourth menu item now reads "Contact Your Care Team" with "Ask the diabetes assistant a non-urgent question" under it. Taylor's 11/18 worry was a patient believing they had messaged their provider; the portal's own label invites that belief, hence the sub-line.
+  - Consequences says deflections cost no model call. They skip the answer model and the monitor, but the classifier still runs, because triage needs it first.
+  - The three menu cards' wording is Claude's draft; only the pump wording is Kay's.
+- Outcome: Accepted; stage one built, gate green (391 tests).
 
 ---
 
