@@ -9,7 +9,7 @@ adr teaching map: the example is not the teaching — these are the up-links fro
 # ADR-0023: Admin intents — refills, appointments and billing go back to the portal menu
 
 - **Date**: 2026-11-21
-- **Iteration**: 2
+- **Iteration**: 3
 - **Status**: Accepted
 - **Deciders**: Kay, Claude Opus 5 (Cowork session)
 
@@ -146,7 +146,7 @@ a
 ---
 
 ### QST-ADMIN-OUT-OF-INSULIN: Is "I ran out of insulin" only a refill, or also a red flag?
-- Status: unanswered
+- Status: answered
 - Why asking: Since iteration 2, "I ran out of insulin" and "I'm almost out of insulin" get the refill card and nothing else. Triage (`triage.ts`) has no rule for running out, so no alert shows unless the classifier happens to raise one. For a type 1 patient, having no insulin is close to the broken-pump case, which ADR-0006 treats as urgent. Whether it is a red flag is a clinical call, not a wording one.
 - Need: pick a letter (or override — any shape answers)
 
@@ -160,12 +160,12 @@ Options:
 **B — urgent when out now, and D alongside.** *Rationale*: the pump case already sets the pattern: no insulin going in means the nurse line shows, then the card says where to get more. A false alarm here costs one extra alert box; a miss leaves a type 1 patient with only a refill card. "Almost out" stays refill-only, because there is still time. *Confidence*: 0.6 — because the asymmetry is clear, but the threshold is clinical and nobody clinical has said it. *If wrong*: if the sponsor says running out is handled by the pharmacy the same day and is not a nurse-line matter, this flips to A.
 
 **ANS:** (by Kay)
-[Fill this in]
+b
 
 ---
 
 ### QST-ADMIN-CARD-TEXT: Are the three menu cards worded right?
-- Status: unanswered
+- Status: answered
 - Why asking: You wrote the pump card. Claude drafted the other three (`ADMIN_CARD` in `src/lib/chat/admin.ts`), and patients will read them word for word. Today they read:
   - Appointment: "I can't book or change appointments from this chat. Please use **Schedule an appointment** in the portal's "What would you like to do?" menu."
   - Refill: "I can't send refill requests from this chat. If your prescription still has refills left, contact your pharmacy. To ask your provider to renew it, use **Refill a medication** in the portal's "What would you like to do?" menu."
@@ -181,12 +181,12 @@ Options:
 **A — keep as written.** *Rationale*: each card says why it isn't answering, then where to go, which is the "validate, then point" shape you agreed is the same mechanism (QST-ADMIN-VALIDATE). The refill card's pharmacy sentence is the portal's own distinction from the Medications page. *Confidence*: 0.6 — because the wording has had no patient or clinician look at it yet. *If wrong*: if testers skim past the first sentence, as your "the current ui is a bit too wordy" (ADR-0004, iteration 4) suggests some will, this flips to B.
 
 **ANS:** (by Kay)
-[Fill this in]
+can you link to those placeholder pages instead? just make it a pseudolink
 
 ---
 
 ### QST-ADMIN-MENU-LABEL: What should the fourth menu button say?
-- Status: unanswered
+- Status: answered
 - Why asking: The home page menu's fourth button opens the assistant. The portal's own label is "Contact Your Care Team", and the real messaging disclaimer behind it promises "Your message will be reviewed by your care team" within 2 business days. The assistant does not do that until ADR-0008's handoff exists. Taylor's 11/18 worry was a patient believing they had messaged their provider. Today the button reads "✦ Contact Your Care Team", with "Ask the diabetes assistant a non-urgent question" under it.
 - Need: pick a letter (or override — any shape answers)
 
@@ -199,12 +199,12 @@ Options:
 **A — portal label plus sub-line.** *Rationale*: the deflection cards name the portal's menu, so the menu has to look like it, and the sub-line is the cheapest honest correction. *Confidence*: 0.65 — because it is a judgement about what older users read, and nobody has watched one use it. *If wrong*: if a tester or Taylor says they thought a nurse would read their message, this flips to B.
 
 **ANS:** (by Kay)
-[Fill this in]
+a
 
 ---
 
 ### QST-ADMIN-LIVE-EVAL: Run the clinician cases against live models now?
-- Status: unanswered
+- Status: answered
 - Why asking: The offline tests check the rules and the turn order with scripted models. Nothing has checked the classifier's new `admin` field, or the six new admin cases, against the real models. `npm run kb:eval-clinician -- --yes` runs all 17 cases for about $0.05 from the $15 budget.
 - Need: yes/no
 
@@ -216,7 +216,7 @@ Options:
 **A — run it now.** *Rationale*: the new classifier line could change what the classifier says about tier or topics on non-admin messages too, and this is the cheapest way to see that before testers do. *Confidence*: 0.7 — because the prompt change is small, but it touches every turn. *If wrong*: if the budget is being saved for the moderated sessions, this flips to B.
 
 **ANS:** (by Kay)
-[Fill this in]
+a
 
 ---
 
@@ -289,7 +289,7 @@ yes
 - [ ] Add the out-of-portal destinations to the clinical sponsor email already in KANBAN Waiting: diabetes class routing, supplies (the pump is generic since iteration 2, so it no longer waits) - Owner: Kay
 - [x] Add admin cases to `kb/clinician-cases.txt`: both refill phrasings on a type 1 and a type 2 patient, plus appointment and billing (classes and supplies wait for stage two) - Owner: Nibble
 - [x] ~~Fix the `hasPlanOnFile` guard in step 3-plan~~: not a bug, see Open Follow-ups
-- [ ] Run `npm run kb:eval-clinician -- --yes` (about $0.05, live models) to check the classifier widener and the new cases end to end - Owner: Kay's go-ahead (budget)
+- [x] Run `npm run kb:eval-clinician -- --yes` to check the classifier widener and the new cases end to end: done, $0.0074, see iteration 3
 - [ ] Tell Taylor Lee the refill answer she approved on 11/18 is now the refill card - Owner: Kay
 
 ---
@@ -334,6 +334,19 @@ yes
   - **The menu stays on the home page.** In the real portal it sits inside the window, one step after "Send a message". Putting it there would bring back a step that QST-PORTAL-SHORTCUT: C (ADR-0004) removed for older users. On the home page, the lanes are still visible and the assistant is still one tap away.
   - **DIAlogue's slot is "Non-Urgent Medical Question".** That is the item one level below Contact Your Care Team. The real messaging disclaimer promises "Your message will be reviewed by your care team" within 2 business days. The assistant does not do that until ADR-0008's handoff exists, which is Taylor's 11/18 worry in the portal's own words. It argues for keeping the sub-line under the menu button ("Ask the diabetes assistant…").
   - The portal pages give phone numbers (scheduling 800-789-7366, technical support). The cards leave them out, following Kay's "without specific numbers" for the pump.
+
+### Iteration 3 (2026-11-21)
+- Trigger: Kay answered the four questions raised while building.
+- Contributors: Kay, Nibble (Claude Opus 5.5)
+- Changes:
+  - **QST-ADMIN-OUT-OF-INSULIN: B.** New fixed triage rule `OUT_OF_INSULIN` (`triage.ts`, criterion `out_of_insulin`, urgent): "I ran out of insulin", "I'm out of my Lantus", "I have no insulin left". It does not cover "almost out", "running out" or "what if I run out", which still get the refill card with no alert. The out-now messages show the nurse line, then the refill card, the same shape as the pump. This adds a red flag to ADR-0006's urgent list. Kay chose B alone, not "B with D", so it is not in the sponsor email.
+  - **QST-ADMIN-CARD-TEXT: "can you link to those placeholder pages instead? just make it a pseudolink".** The menu item in each card is now a link: "Please use [Schedule an appointment]." The phrase "in the portal's 'What would you like to do?' menu" is dropped. The links open static "This is a demo" panels in `index.html` (`#demo-schedule`, `#demo-refill`, `#demo-billing`) through CSS `:target`, the same way the nurse-line link works. The home page menu items open the same panels, so each portal item has one placeholder. A real deployment would put the portal's own URLs in `ADMIN_CARD[].href`.
+  - **QST-ADMIN-MENU-LABEL: A.** As built.
+  - **QST-ADMIN-LIVE-EVAL: A.** `npm run kb:eval-clinician -- --yes`: 17 cases, 30 model calls, $0.0074. All six admin cases came out as intended. The pump case showed the urgent alert plus the pump card. The three refill phrasings, the appointment and the bill each got only their card, with no answer model. Two non-admin results to watch:
+    - Case 2, "My blood sugar is high, what do I do?", got tier **distress** (`classifier_distress`). Its fixed rule says check-in, and distress is an odd label for it.
+    - Case 11, "Should I take insulin for fruit?" (Taylor approved it on 11/18), got a **check-in** from the classifier plus the dose refusal. The refusal is the fixed `DOSE_INTENT` rule ("should I … take … insulin"), unchanged since triage was first committed, so it is not new.
+    - No earlier run's output was kept (`kb/out/` is ignored), so whether the new `admin` line in the classifier prompt shifted these tiers is **unknown**. Both err toward more help, not less. One baseline run on the old prompt (about $0.01) would settle it.
+- Outcome: Accepted; gate green (398 tests).
 
 ---
 
