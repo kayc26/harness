@@ -221,6 +221,7 @@ yes
 
 ## Validation
 
+- [x] The menu labels match the live portal (Kay's screenshots, 2026-11-21)
 - [ ] Kay: the scope statement, that DIAlogue owns the Contact Your Care Team lane only, is what she meant
 - [ ] Kay: the four-outcome table matches what she saw on 2026-11-21
 - [ ] Clinical sponsor or Taylor Lee: the out-of-portal destinations are correct before any of them ships
@@ -253,6 +254,13 @@ yes
   - Consequences says deflections cost no model call. They skip the answer model and the monitor, but the classifier still runs, because triage needs it first.
   - The three menu cards' wording is Claude's draft; only the pump wording is Kay's.
 - Outcome: Accepted; stage one built, gate green (391 tests).
+- Later the same day, Kay shared eight screenshots of the live portal flow ("just fyi"): the home page; Send a message → the "What would you like to do?" menu inside the window; the Schedule an Appointment page; the Medications page; the Billing Assistance disclaimer and its "What type of non-clinical question?" list; the messaging disclaimer; and Contact Your Care Team → "What type of medical question?" (Non-Urgent Medical Question, Prescription Question, Test Results Question, Appointment Question, Attach Document/Photo, Referral/Pre-Certification Request). What they changed:
+  - **The labels are verified.** All four menu labels match the cards exactly, so the Validation item about checking them against the live portal is done.
+  - **Two meanings of "refill".** The Medications page says a request there is "a request for your provider to renew your prescription at the pharmacy. This is NOT a request to your pharmacy to dispense medication to you. Please contact your pharmacy directly to obtain remaining refills." The refill card now names both routes: the pharmacy for refills left, Refill a medication for a renewal. This is the portal's own distinction, not a clinic fact, and it brings back the pharmacist pointer Taylor approved on 11/18.
+  - **Questions *about* an appointment or a prescription are our lane.** The portal lists "Appointment Question" and "Prescription Question" under Contact Your Care Team. "When is my next appointment?" no longer gets the scheduling card, which matches the narrow patterns.
+  - **The menu stays on the home page.** In the real portal it sits inside the window, one step after "Send a message". Putting it there would bring back a step that QST-PORTAL-SHORTCUT: C (ADR-0004) removed for older users. On the home page, the lanes are still visible and the assistant is still one tap away.
+  - **DIAlogue's slot is "Non-Urgent Medical Question".** That is the item one level below Contact Your Care Team. The real messaging disclaimer promises "Your message will be reviewed by your care team" within 2 business days. The assistant does not do that until ADR-0008's handoff exists, which is Taylor's 11/18 worry in the portal's own words. It argues for keeping the sub-line under the menu button ("Ask the diabetes assistant…").
+  - The portal pages give phone numbers (scheduling 800-789-7366, technical support). The cards leave them out, following Kay's "without specific numbers" for the pump.
 
 ---
 
