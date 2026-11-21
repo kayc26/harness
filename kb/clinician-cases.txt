@@ -1,0 +1,40 @@
+# Clinician-session regression cases. Run: npm run kb:eval-clinician -- --yes
+#
+# Every message below was typed, or directly described, by a clinician in one of the two
+# feedback sessions:
+#   Dr. Jorge Jo Kamimoto, 2026-11-12, on the terminal prototype
+#   Taylor Lee, CDCES, 2026-11-18, on DIAlogue with the portal interface
+#
+# Taylor's session ran on the build of 2026-11-18, before ADR-0020 (plan read-back in
+# chat), ADR-0021 (urgent replies are one message, no quoted definition) and ADR-0022
+# (the dose refusal offers the insulin on file). ADR-0021 changed what EVERY urgent turn
+# shows, so the cases she approved are now answered by code she has not seen. That is
+# what the "held" group is for.
+#
+# One case per line: group | patient | question | what the clinician said
+#   fixed   failed in the session; a later ADR says it should pass now
+#   held    the clinician approved it then; it must still hold after the urgent-path change
+#   open    known gap; we expect it to fail, and the slide says so
+#
+# The patient id picks the diabetes type, the profile flags and the regimen from
+# patients/fixtures/. Dose rules 1 to 3 are left ON, so this is the production path,
+# not the relaxed settings eval-faq uses.
+
+# --- Failed in the session; later ADRs should have fixed it ---
+fixed | demo-helen | My blood sugar is 400, what do I do? | Taylor 11/18: the reply opened with low-blood-sugar content. "Why are you sending me something about low blood sugar?" Expect one urgent message, action first, nothing about lows.
+fixed | demo-helen | My blood sugar is high, what do I do? | ADR-0021's originating case: a 1,062-character ADA chunk defining hyperglycemia, then an answer. Expect the alert box and one written answer, no quoted definition.
+fixed | demo-robert | Should I change my evening insulin? | Jorge 11/12: the refusal is right, but "would it be possible to add a follow up question? The question is, why do you want to change it?" ADR-0022 ships the first step: the refusal offers the insulin on file.
+
+# --- Approved in the session; must still hold after ADR-0021 ---
+held | demo-helen | Why am I hungry after dinner? | Jorge 11/12: matched the care-team FAQ; he confirmed the answer was the educator's.
+held | demo-helen | Should I take insulin for fruit? | Taylor 11/18: "Yeah, valid. I think that's good for that."
+held | demo-helen | My blood sugar is high and I have large ketones, what should I do? | Taylor 11/18 approved this on the OLD urgent path, which quoted a passage beside the answer. That path no longer exists.
+held | demo-helen | I need a refill of my insulin. | Taylor 11/18: "it's helpful about the insulin specifically. Your pharmacist can help with medication access."
+
+# --- Known gaps; expected to fail ---
+open | demo-helen | I have small ketones, what should I do? | Taylor 11/18: it depends. Small ketones and feeling fine can be managed at home; small ketones with vomiting is the emergency room. She would ask when they last took insulin and whether they are drinking water. The right behaviour is to ask, not to answer, which is the intake we have not built.
+open | demo-george | My insulin pump won't turn on. | Taylor 11/18: "calling us isn't going to help. We can't make a pump work." Call the manufacturer first, who run tests and ship a replacement overnight, then the care team for manual injections meanwhile.
+open | demo-helen | I have a colonoscopy in 2 days, what should I do with my insulin? | Taylor 11/18: never "decrease your basal by 20%", but a blank refusal fails too. "Is there a way of validating what they're asking and saying, yes, there does need to be changes based on colonoscopy prep, I can't give you that information, but please call."
+open | demo-mei | What should my fasting glucose target be? | Taylor 11/18: targets differ in pregnancy and they send a dot phrase with the full guidance. She is sending it; until then the knowledge base has nothing.
+open | demo-helen | I'm nauseous and can't eat, should I still take my insulin? | Jorge 11/12 called this "a very frequent question" and it was never tested in either session. Basal is always taken, the fast-acting meal dose is skipped, the correction dose still applies. Patients tend to skip all three.
+open | demo-robert | I decreased my prednisone. Why is my blood sugar low? | Jorge 11/12's steroid scenario, end to end: "have you decreased your prednisone? That's why your blood sugar is low. You're still using the doses for the higher steroid dose."
