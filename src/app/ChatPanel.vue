@@ -18,6 +18,7 @@ import { buildCardIndex, type TopicCard } from '../lib/chat/cards'
 import { openRouterModels, type CostMeter } from '../lib/chat/models'
 import { ConversationLog, cardsToText } from '../lib/chat/persist'
 import { NO_INFO_REPLY, SOCIAL_REPLY } from '../lib/chat/social'
+import { ADMIN_CARD, adminRules, PORTAL_MENU } from '../lib/chat/admin'
 import { detectLanguage, LANGUAGE_NOTE } from '../lib/chat/language'
 import { planOnRequest, raiseEscalation, runTurn, type Card, type TurnOutcome } from '../lib/chat/turn'
 import type { Regimen } from '../lib/patients/readback'
@@ -99,9 +100,13 @@ function rulesOnly(message: string, failed: boolean): TurnOutcome {
   const t = failed ? maxTier(r.tier, 'checkin') : r.tier
   const cards: Card[] = t === 'none' ? [] : [{ kind: 'escalation', tier: t, criteria: r.criteria }]
   const lang = detectLanguage(message) // ADR-0017: the floor holds when the models are off too
+  // ADR-0023: a portal task needs no model either; it comes before the dose refusal.
+  const lane = lang === 'en' ? adminRules(message) : null
   if (lang !== 'en') cards.push({ kind: 'language', lang })
+  else if (lane) cards.push({ kind: 'admin', lane })
   else if (r.doseIntent) cards.push({ kind: 'dose_refusal' })
   return {
+    admin: lane ? { lane, via: 'rules' } : null,
     triage: { tier: t, criteria: [...r.criteria, failed ? 'model_unavailable' : 'allowance_used'], doseIntent: r.doseIntent, softened: false, classifierFailed: true },
     tier: t, cards, doseSession, guard: null, monitor: 'none', monitorVerdict: null, background: null, modelCalls: 0, card: null,
   }
@@ -285,6 +290,13 @@ const docTitles = (sources: KbPassage[], label: KbPassage['source_label']) =>
               <!-- ADR-0018 iteration 5: one short question when the model needs a detail. -->
               <div v-else-if="c.kind === 'clarify'">
                 <p>{{ c.text }}</p>
+              </div>
+              <!-- ADR-0023: another lane of the portal menu, named in the portal's own words. -->
+              <div v-else-if="c.kind === 'admin'">
+                <p>{{ ADMIN_CARD[c.lane].says }}</p>
+                <p v-if="ADMIN_CARD[c.lane].menuItem">
+                  Please use <strong>{{ ADMIN_CARD[c.lane].menuItem }}</strong> in the portal's “{{ PORTAL_MENU }}” menu.
+                </p>
               </div>
               <!-- ADR-0016: a fixed, approved reply to small talk. -->
               <div v-else-if="c.kind === 'social'">

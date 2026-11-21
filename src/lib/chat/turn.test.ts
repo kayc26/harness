@@ -16,6 +16,7 @@ import { DataError, type DataClient } from '../neon/data'
 import type { Profile } from './triage'
 import type { Regimen } from '../patients/readback'
 import robertFixture from '../../../patients/fixtures/demo-robert.json'
+import dorothyFixture from '../../../patients/fixtures/demo-dorothy.json'
 
 const NONE: Profile = { history_of_dka: false, pregnant: false, uses_pump: false }
 const P = (id: string, section: string, body: string, tags: string[] = []): KbPassage => ({
@@ -363,7 +364,69 @@ describe('plan read-back in chat (ADR-0020)', () => {
   })
 })
 
+describe('portal tasks go back to the portal menu (ADR-0023)', () => {
+  const PUMP_USER: Profile = { history_of_dka: true, pregnant: false, uses_pump: true } // George
+  const adminCls = (admin: string) => JSON.stringify({ tier: 'none', happening_now: false, dose_intent: false, admin, reason: 'test' })
+
+  it('a refill request gets the refill card and no answer model', async () => {
+    const { m, calls } = models({})
+    const o = await turn('I need a refill of my insulin', m)
+    expect(o.cards).toEqual([{ kind: 'admin', lane: 'refill' }])
+    expect(o.admin).toEqual({ lane: 'refill', via: 'rules' })
+    expect(calls).toMatchObject({ complete: 0, monitor: 0 })
+  })
+
+  it('the classifier widens a phrasing the rules miss', async () => {
+    const { m } = models({ classify: adminCls('refill') })
+    const o = await turn('can someone send more lantus to my pharmacy', m)
+    expect(o.cards).toEqual([{ kind: 'admin', lane: 'refill' }])
+    expect(o.admin?.via).toBe('classifier')
+  })
+
+  it("a pump that won't turn on: the nurse line first, then the pump card (Taylor Lee, 2026-11-18)", async () => {
+    // Taylor: the manufacturer fixes the pump, the care team covers injections meanwhile.
+    // The urgent alert carries the second half; the card carries the first.
+    const { m } = models({ classify: cls('urgent', true) }) // a report, happening now
+    const o = await turn("My insulin pump won't turn on.", m, { profile: PUMP_USER })
+    expect(o.cards.map((c) => (c.kind === 'escalation' ? `escalation:${c.tier}` : c.kind))).toEqual(['escalation:urgent', 'admin'])
+    expect(o.triage.criteria).toContain('pump_failure_pump_user') // the fixed rule, not only the classifier
+  })
+
+  it('an emergency still short-circuits before any card or model call', async () => {
+    const { m, calls } = models({})
+    const o = await turn("my pump died and my husband won't wake up", m, { profile: PUMP_USER })
+    expect(o.tier).toBe('emergency')
+    expect(o.cards.some((c) => c.kind === 'admin')).toBe(false)
+    expect(calls.classify).toBe(0)
+  })
+
+  it('a health question that only mentions an appointment is still answered', async () => {
+    // (This test's small index has nothing on appointments, so the turn ends at "no
+    // information"; the live knowledge base has a support section for it.)
+    const { m } = models({})
+    const o = await turn("How do I prepare for my doctor's appointment?", m)
+    expect(o.cards.some((c) => c.kind === 'admin')).toBe(false)
+    expect(o.admin ?? null).toBeNull()
+  })
+})
+
 describe('Regression tests', () => {
+  it("a refill request no longer reads Dorothy's insulin back (Kay, live site, 2026-11-21; ADR-0023)", async () => {
+    // Bug: "I need a refill of my insulin" on Dorothy's screen showed her regimen. The
+    // classifier called it a plan question, and planBlocker (plan.ts) vetoes only a
+    // reading, a symptom, a change word or an advice phrasing, none of which a refill
+    // request has. The same intent got four different replies across patients and
+    // phrasings (ADR-0023's table). The admin check now runs before the plan step.
+    const { m, calls } = models({ classify: JSON.stringify({ tier: 'none', happening_now: false, dose_intent: false, plan_question: true, reason: 'test' }) })
+    const o = await runTurn({
+      message: 'I need a refill of my insulin', history: [], profile: NONE, index, doseSession: false, models: m, timeoutMs: 50,
+      monitorEnabled: true, regimen: dorothyFixture.regimen as unknown as Regimen,
+    })
+    expect(o.cards).toEqual([{ kind: 'admin', lane: 'refill' }])
+    expect(o.plan).toBeNull()
+    expect(calls.complete).toBe(0)
+  })
+
   it('"hi" gets the fixed greeting, not "I don\'t have information on that" (Kay, live site, 2026-11-17)', async () => {
     // Bug: "hi" ran the answer model, which wrote a friendly uncited greeting; the
     // guard blocked it (no_citation, by design: ADR-0005), no passage fit as a

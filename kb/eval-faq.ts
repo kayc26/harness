@@ -28,6 +28,7 @@ import { buildIndex, type DiabetesType, type KbPassage } from '../src/lib/chat/r
 import { CARDS_PAUSED } from '../src/lib/chat/prompts'
 import { runTurn, type Card } from '../src/lib/chat/turn'
 import { NO_INFO_REPLY, SOCIAL_REPLY } from '../src/lib/chat/social'
+import { ADMIN_CARD } from '../src/lib/chat/admin'
 import { doseAdviceIn } from '../src/lib/chat/guard'
 import type { DraftCard } from './cards-lib'
 
@@ -88,6 +89,7 @@ const shown = (c: Card): string => {
     case 'no_info': return `**[no information]** ${NO_INFO_REPLY}`
     case 'clarify': return `**[clarifying question]** ${c.text}`
     case 'language': return `**[not English (${c.lang}): help shown]**`
+    case 'admin': return `**[portal task: fixed ${c.lane} card]** ${ADMIN_CARD[c.lane].says}`
     case 'social': return `**[small talk: fixed ${c.intent} reply]** ${SOCIAL_REPLY[c.intent]}`
     case 'plan': return `**[plan read back by code (${c.reply.mode})]** ${c.reply.heading} ${c.reply.lines.join(' ')}`
   }

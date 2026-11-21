@@ -2,6 +2,8 @@
 // ordering guarantees are testable offline:
 //   1. fixed-rule triage first; an emergency short-circuits with no model call;
 //   2. classifier (timeout counts as check-in), combined with the rules;
+//   2c. a task for another portal lane (refill, appointment, billing, a broken pump) gets
+//      a fixed card naming where to go (ADR-0023), before the plan and dose steps;
 //   3. a dose question gets the fixed refusal card, and the answer model is never called;
 //   4. dose-tagged passages are never given to the model; one is shown verbatim only if
 //      it's the best match and the question is about glucose/insulin/medicine;
@@ -27,6 +29,7 @@ import { sectionPassages, type Topic } from './topics'
 import { maxTier, triageRules, type Profile, type Tier } from './triage'
 import { OFFER_PLAN_AFTER_REFUSAL, planBlocker } from './plan'
 import { hasPlanOnFile, planReply, type PlanReply, type Regimen } from '../patients/readback'
+import { adminLane, type AdminLane } from './admin'
 
 export type Card =
   | { kind: 'escalation'; tier: Tier; criteria: string[] }
@@ -43,6 +46,8 @@ export type Card =
   | { kind: 'clarify'; text: string }
   /** The message isn't English: help buttons and an "English only" note (ADR-0017). */
   | { kind: 'language'; lang: Lang }
+  /** A task for another lane of the portal menu, or the pump maker (ADR-0023); fixed text. */
+  | { kind: 'admin'; lane: AdminLane }
   | { kind: 'answer'; text: string; sources: KbPassage[] }
   | { kind: 'topic_card'; card: TopicCard; sources: KbPassage[] }
 
@@ -119,6 +124,9 @@ export interface TurnOutcome {
    *  plan was not read back (null: it was), `mode` which reply was shown. */
   /** ADR-0022: `offered` when the refusal offered the record; `via: 'offer'` on the tap's turn. */
   plan?: { blocker: string | null; mode: PlanReply['mode'] | null; offered?: boolean; via?: 'offer' } | null
+  /** ADR-0023: the portal lane the message was pointed to, and whether the fixed rules
+   *  or the classifier found it. Null when it was not an admin message. */
+  admin?: { lane: AdminLane; via: 'rules' | 'classifier' } | null
   /** How the answer's material was found: whole topic sections, or word search. Null when no answer was attempted. */
   retrieval?: 'topics' | 'search' | null
   monitor: 'none' | 'blocking' | 'background' | 'paused'
@@ -312,6 +320,17 @@ export async function runTurn(input: TurnInput): Promise<TurnOutcome> {
   if (lang !== 'en') {
     cards.push({ kind: 'language', lang })
     return done()
+  }
+
+  // 2c. A task for another lane of the portal menu (ADR-0023). After triage, so a red
+  // flag keeps its alert above the card (a broken pump is urgent: the nurse line, then
+  // the pump card). Before the plan read-back and the dose refusal (QST-ADMIN-ORDER: A):
+  // "I need a refill of my insulin" is not a dose question and not a plan question, and
+  // was answered as both. Fixed rules first, the classifier only widens (GATE: C).
+  const admin = adminLane(message, classified?.admin)
+  if (admin) {
+    cards.push({ kind: 'admin', lane: admin.lane })
+    return done({ admin })
   }
 
   // 3-plan. A question about what the patient's own plan says (ADR-0020). Read back by

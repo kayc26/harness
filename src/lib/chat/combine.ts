@@ -6,6 +6,7 @@
 //   - A failed, slow, or unreadable classifier counts as at least "check-in", never
 //     as "none".
 
+import { ADMIN_LANES, type AdminLane } from './admin'
 import { validTopics, type Topic } from './topics'
 import { maxTier, type Tier, type TriageResult } from './triage'
 
@@ -15,6 +16,9 @@ export interface ClassifierResult {
   dose_intent: boolean
   /** Asks what their own plan or schedule says (ADR-0020); fixed checks in plan.ts still veto. */
   plan_question: boolean
+  /** A portal task the message asks for (ADR-0023); widens the fixed rules in admin.ts,
+   *  never clears them. Null for anything else, or an unknown value. */
+  admin: AdminLane | null
   reason: string
   /** Up to two knowledge-base topics for the answer (ADR-0018); empty when none fits. */
   topics: Topic[]
@@ -34,6 +38,7 @@ export function parseClassifier(text: string | null | undefined): ClassifierResu
       happening_now: o.happening_now,
       dose_intent: o.dose_intent === true,
       plan_question: o.plan_question === true,
+      admin: ADMIN_LANES.includes(o.admin as AdminLane) ? (o.admin as AdminLane) : null,
       reason: typeof o.reason === 'string' ? o.reason.slice(0, 200) : '',
       topics: validTopics(o.topics),
     }

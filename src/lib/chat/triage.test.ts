@@ -111,3 +111,16 @@ describe('dose questions go to the fixed refusal card (ADR-0005)', () => {
     expect(r.tier).toBe('urgent')
   })
 })
+
+describe('Regression tests', () => {
+  it('a pump that will not turn on is a pump failure (Taylor Lee, 2026-11-18; ADR-0023)', () => {
+    // Bug: Taylor typed "My insulin pump won't turn on." in the clinician session.
+    // PUMP_FAILURE listed "stopped", "not working", "broke" and alarms, but not "won't
+    // turn on", so the fixed rules returned "none" and the nurse line depended on the
+    // classifier happening to call it urgent. A pump user with a dead pump has no
+    // insulin going in, which is the red flag ADR-0006 lists.
+    for (const msg of ["My insulin pump won't turn on.", 'my pump is dead', 'my pump died last night', 'the pump screen is cracked']) {
+      expect(tierOf(msg, { ...NONE, uses_pump: true }), msg).toBe('urgent')
+    }
+  })
+})

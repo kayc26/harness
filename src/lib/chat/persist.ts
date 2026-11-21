@@ -4,6 +4,7 @@
 // Saving must never block the patient: failures are reported, chatting continues.
 
 import type { DataClient } from '../neon/data'
+import { ADMIN_CARD } from './admin'
 import type { CallNote } from './models'
 import type { Card, TurnOutcome } from './turn'
 
@@ -31,6 +32,8 @@ export function cardsToText(cards: Card[]): string {
           return "[no information on that in the knowledge base]"
         case 'social':
           return `[small talk: fixed ${c.intent} reply]`
+        case 'admin':
+          return `[portal task (${c.lane}): fixed card pointing to ${ADMIN_CARD[c.lane].menuItem ? `"${ADMIN_CARD[c.lane].menuItem}"` : 'the pump manufacturer'}]`
         case 'clarify':
           return `${c.text} [clarifying question, no source needed]`
         case 'language':
@@ -87,6 +90,7 @@ export class ConversationLog {
         retrieval: outcome.retrieval ?? null, // ADR-0018: "topics" (whole sections) or "search" (word search fallback)
         language: outcome.cards.flatMap((c) => (c.kind === 'language' ? [c.lang] : []))[0] ?? 'en', // ADR-0017
         plan: outcome.plan ?? null, // ADR-0020: a plan question; why it wasn't read back, or which reply was shown
+        admin: outcome.admin ?? null, // ADR-0023: the portal lane pointed to, and whether rules or the classifier found it
         calls, // per-call finish reason, tokens, timing (models.ts CallNote)
       },
     })

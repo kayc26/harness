@@ -72,7 +72,7 @@ const REPEATED_LOWS =
   /\b(third|3rd|fourth|another|again)\b[^.]{0,20}\blow\b|\blow\b[^.]{0,30}\b(three|four|several|multiple|3|4|many) times\b|\b(keep|kept|keeps) (going|getting|dropping) low\b|\b(several|multiple|three|3) lows\b/
 const NEEDED_HELP = /\b(had to|needed (?:my )?\w* to|somebody|someone|my (?:wife|husband|daughter|son|neighbou?r)|paramedics?|ambulance)\b[^.]{0,40}\b(help|give me|gave me|glucagon|juice|sugar|called)\b|\bglucagon\b/
 const PUMP_FAILURE =
-  /\bpump\b[^.]{0,40}\b(alarm|occlu|stopped|not working|isn'?t working|broke|failed|failure|error|came out|fell out|kinked|blocked|no insulin|empty|battery)\w*|\b(site|cannula|tubing)\b[^.]{0,20}\b(came out|fell out|kinked|blocked|leak)\w*/
+  /\bpump\b[^.]{0,40}\b(alarm|occlu|stopped|not working|isn'?t working|won'?t (?:turn on|start|work|power on)|not turning on|dead|died|cracked|broke|failed|failure|error|came out|fell out|kinked|blocked|no insulin|empty|battery)\w*|\b(site|cannula|tubing)\b[^.]{0,20}\b(came out|fell out|kinked|blocked|leak)\w*/
 const PREGNANT = /\b(pregnan\w*|expecting a baby|having a baby|weeks along)\b/
 const DISTRESS = /\b(can'?t cope|cannot cope|overwhelmed|hopeless|so scared|really scared|terrified|panick\w*|can'?t take (?:it|this) anymore|falling apart)\b/
 // Insulin words, including common US brand names: "should I increase my Lantus" was

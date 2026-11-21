@@ -10,6 +10,7 @@ import { computed, ref } from 'vue'
 import type { User } from '../lib/neon/auth'
 import { viewsFor, type DataClient, type Membership } from '../lib/neon/data'
 import NewMessageWindow from './NewMessageWindow.vue'
+import { PORTAL_MENU } from '../lib/chat/admin'
 import { currentTheme, toggleTheme } from './theme'
 
 const props = defineProps<{ user: User; membership: Membership; data: Required<DataClient> }>()
@@ -95,7 +96,24 @@ function switchTheme(): void {
       <div class="page">
         <aside class="nav" aria-label="Message Center">
           <h1>Message Center</h1>
-          <button v-if="views.includes('patient')" class="send" type="button" @click="openWindow">✦ Ask a non-urgent question</button>
+          <!-- ADR-0023 (QST-ADMIN-MOCK: A): the portal's own menu, so the assistant's lane is
+               visible and its deflection cards point at something on screen. Labels copied
+               from the real portal; only the last item is in the demo. -->
+          <section v-if="views.includes('patient')" class="tasks" aria-labelledby="tasks-head">
+            <h2 id="tasks-head">{{ PORTAL_MENU }}</h2>
+            <button type="button" class="task" @click="staticPart('Schedule an appointment')">
+              <span class="ico" aria-hidden="true">📅</span>Schedule an appointment
+            </button>
+            <button type="button" class="task" @click="staticPart('Refill a medication')">
+              <span class="ico" aria-hidden="true">💊</span>Refill a medication
+            </button>
+            <button type="button" class="task" @click="staticPart('Billing Assistance')">
+              <span class="ico" aria-hidden="true">🧾</span>Billing Assistance
+            </button>
+            <button class="send" type="button" @click="openWindow">
+              ✦ Contact Your Care Team<small>Ask the diabetes assistant a non-urgent question</small>
+            </button>
+          </section>
           <ul>
             <li>
               <button type="button" :class="{ on: view === 'patient' }" @click="views.includes('patient') ? (view = 'patient') : staticPart('Conversations')">
@@ -139,7 +157,7 @@ function switchTheme(): void {
               <span class="conv-body">
                 <span class="t">Welcome to your patient portal <time>example</time></span>
                 <span class="who">Care Team</span>
-                <span class="pv">Questions about diabetes? Use Ask a non-urgent question.</span>
+                <span class="pv">Questions about diabetes? Use Contact Your Care Team.</span>
               </span>
             </button>
             <p class="end">There are no more conversations to show.</p>
@@ -281,15 +299,41 @@ button {
   font-weight: 400;
   margin: 0 0 1rem;
 }
+.tasks h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+.task {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 2.75rem;
+  margin-bottom: 0.4rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--text);
+  text-align: left;
+}
 .send {
   display: block;
   width: 100%;
   min-height: 2.75rem;
+  padding: 0.45rem 0.7rem;
   border: 0;
   border-radius: 4px;
   background: var(--navy);
   color: #fff;
   font-weight: 600;
+  text-align: left;
+}
+.send small {
+  display: block;
+  font-weight: 400;
+  font-size: 0.8rem;
 }
 .nav ul {
   list-style: none;

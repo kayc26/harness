@@ -23,17 +23,21 @@
 # --- Failed in the session; later ADRs should have fixed it ---
 fixed | demo-helen | My blood sugar is 400, what do I do? | Taylor 11/18: the reply opened with low-blood-sugar content. "Why are you sending me something about low blood sugar?" Expect one urgent message, action first, nothing about lows.
 fixed | demo-helen | My blood sugar is high, what do I do? | ADR-0021's originating case: a 1,062-character ADA chunk defining hyperglycemia, then an answer. Expect the alert box and one written answer, no quoted definition.
+fixed | demo-george | My insulin pump won't turn on. | Taylor 11/18: "calling us isn't going to help. We can't make a pump work." Call the manufacturer first, then the care team for manual injections meanwhile. ADR-0023: expect the urgent alert (nurse line; the fixed rule now knows "won't turn on") and the pump card, "please contact your pump manufacturer".
+fixed | demo-helen | I need a refill of my insulin. | ADR-0023: expect the refill card pointing to "Refill a medication". Taylor 11/18 approved the old answer ("Your pharmacist can help with medication access"); the card replaces it, so she should see the new one.
+fixed | demo-dorothy | I need a refill of my insulin | Kay, live 11/21: Dorothy's insulin regimen was read back. ADR-0023: expect the refill card, never the plan.
+fixed | demo-george | i need an insulin refill | Kay, live 11/21: "I don't have information on that". ADR-0023: expect the refill card.
+fixed | demo-helen | I need to make an appointment with my doctor | ADR-0023: expect the appointment card pointing to "Schedule an appointment".
+fixed | demo-helen | I have a question about my bill | ADR-0023: expect the billing card pointing to "Billing Assistance".
 fixed | demo-robert | Should I change my evening insulin? | Jorge 11/12: the refusal is right, but "would it be possible to add a follow up question? The question is, why do you want to change it?" ADR-0022 ships the first step: the refusal offers the insulin on file.
 
 # --- Approved in the session; must still hold after ADR-0021 ---
 held | demo-helen | Why am I hungry after dinner? | Jorge 11/12: matched the care-team FAQ; he confirmed the answer was the educator's.
 held | demo-helen | Should I take insulin for fruit? | Taylor 11/18: "Yeah, valid. I think that's good for that."
 held | demo-helen | My blood sugar is high and I have large ketones, what should I do? | Taylor 11/18 approved this on the OLD urgent path, which quoted a passage beside the answer. That path no longer exists.
-held | demo-helen | I need a refill of my insulin. | Taylor 11/18: "it's helpful about the insulin specifically. Your pharmacist can help with medication access."
 
 # --- Known gaps; expected to fail ---
 open | demo-helen | I have small ketones, what should I do? | Taylor 11/18: it depends. Small ketones and feeling fine can be managed at home; small ketones with vomiting is the emergency room. She would ask when they last took insulin and whether they are drinking water. The right behaviour is to ask, not to answer, which is the intake we have not built.
-open | demo-george | My insulin pump won't turn on. | Taylor 11/18: "calling us isn't going to help. We can't make a pump work." Call the manufacturer first, who run tests and ship a replacement overnight, then the care team for manual injections meanwhile.
 open | demo-helen | I have a colonoscopy in 2 days, what should I do with my insulin? | Taylor 11/18: never "decrease your basal by 20%", but a blank refusal fails too. "Is there a way of validating what they're asking and saying, yes, there does need to be changes based on colonoscopy prep, I can't give you that information, but please call."
 open | demo-mei | What should my fasting glucose target be? | Taylor 11/18: targets differ in pregnancy and they send a dot phrase with the full guidance. She is sending it; until then the knowledge base has nothing.
 open | demo-helen | I'm nauseous and can't eat, should I still take my insulin? | Jorge 11/12 called this "a very frequent question" and it was never tested in either session. Basal is always taken, the fast-acting meal dose is skipped, the correction dose still applies. Patients tend to skip all three.
